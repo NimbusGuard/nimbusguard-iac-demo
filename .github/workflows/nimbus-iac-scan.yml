@@ -1,0 +1,35 @@
+name: NimbusGuard IaC Scan
+
+# Shift-left: every PR (and every push to main) is evaluated against
+# NimbusGuard's real control catalog BEFORE any of this reaches a cloud
+# account. A PR that introduces a public bucket, an open security group, an
+# unencrypted database, ... fails this check and gets a comment explaining
+# exactly which control it tripped — the same control ID it would trip at
+# runtime.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  iac-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write   # so the scanner can post/update its PR comment
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: NimbusGuard IaC Scan
+        uses: NimbusGuard/nimbus-iac-scanner@main
+        with:
+          api-url: ${{ secrets.NIMBUS_API_URL }}
+          api-key: ${{ secrets.NIMBUS_API_KEY }}
+          path: "."
+          # Post/update a summary comment on the pull request.
+          post-pr-comment: "true"
+          # Leave min-severity unset so ANY real FAIL blocks the check —
+          # this demo repo is deliberately insecure, so the check is
+          # expected to catch it. A real team can raise this (e.g.
+          # min-severity: CRITICAL) or set a central policy on NimbusGuard.

@@ -1,0 +1,7 @@
+# Terraform (never committed; this repo is scanned as source, never applied)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+# Compiled Bicep
+*.json.tmp

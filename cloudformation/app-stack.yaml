@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  NimbusGuard IaC scanning demo — CloudFormation. DEMO ONLY, never deployed.
+  Deliberately misconfigured resources so the scanner flags them at PR time,
+  against the same control catalog it uses at runtime. Control IDs per resource.
+
+Resources:
+  # NG-AWS-S3-001 — public bucket (Block Public Access all disabled)
+  ReportsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: acme-reports-demo
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      Tags:
+        - Key: environment
+          Value: prod
+
+  # NG-AWS-EC2-001 — RDP (3389) open to the entire internet
+  WebSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: web tier
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3389
+          ToPort: 3389
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: environment
+          Value: prod
+
+  # NG-AWS-KMS-001 — key without rotation
+  DataKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: data key
+      EnableKeyRotation: false
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "kms:*"
+            Resource: "*"
+
+  # NG-AWS-RDS-002 — unencrypted database
+  AnalyticsDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: analytics-db
+      Engine: mysql
+      DBInstanceClass: db.t3.small
+      AllocatedStorage: "20"
+      StorageEncrypted: false
+      Tags:
+        - Key: environment
+          Value: prod
+
+  # NG-AWS-IAM-012 — role with AdministratorAccess attached inline
+  PipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: pipeline-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement: []
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+
+  # NG-AWS-DYNAMODB — no PITR, no deletion protection
+  EventsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: events
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      Tags:
+        - Key: environment
+          Value: prod
+
+  # NG-AWS-ECR-001/002 — mutable tags, no scan-on-push
+  ServiceRepo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: acme/service
+      ImageTagMutability: MUTABLE
+      ImageScanningConfiguration:
+        ScanOnPush: false
+      Tags:
+        - Key: environment
+          Value: prod
+
+  # ── Hardened — these PASS ──────────────────────────────────────────────────
+
+  # PASS — private bucket, Block Public Access on
+  AuditBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: acme-audit-demo
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # PASS — key with rotation
+  BackupKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: backup key
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: "*"
+            Action: "kms:*"
+            Resource: "*"
