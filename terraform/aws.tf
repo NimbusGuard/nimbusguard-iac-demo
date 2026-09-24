@@ -152,6 +152,19 @@ resource "aws_sagemaker_notebook_instance" "research" {
   tags                   = { environment = "prod" }
 }
 
+# ── NG-AWS-EC2-011 — IMDSv2 not enforced (metadata_options.http_tokens = optional) ──
+resource "aws_instance" "app" {
+  ami           = "ami-0abcdef1234567890"
+  instance_type = "t3.small"
+
+  metadata_options {
+    http_endpoint = "enabled"
+    http_tokens   = "optional"
+  }
+
+  tags = { environment = "prod" }
+}
+
 # =============================================================================
 #  Hardened resources — these PASS. NimbusGuard blesses good IaC too, so a
 #  clean PR isn't blocked and the report shows what "right" looks like.
