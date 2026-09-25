@@ -55,7 +55,7 @@ resource "aws_db_instance" "orders" {
 # ── NG-AWS-KMS-001 — customer key without automatic rotation ─────────────────
 resource "aws_kms_key" "app_data" {
   description         = "application data key"
-  enable_key_rotation = false
+  enable_key_rotation = true
   tags                = { environment = "prod" }
 }
 
