@@ -131,6 +131,9 @@ resource "aws_efs_file_system" "shared" {
 
 # ── NG-AWS-DYNAMODB — no point-in-time recovery, no deletion protection ──────
 resource "aws_dynamodb_table" "sessions" {
+  point_in_time_recovery {
+    enabled = true
+  }
   name         = "sessions"
   hash_key     = "id"
   billing_mode = "PAY_PER_REQUEST"
