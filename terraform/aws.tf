@@ -49,7 +49,7 @@ resource "aws_db_instance" "orders" {
   instance_class      = "db.t3.medium"
   allocated_storage   = 50
   publicly_accessible = true
-  storage_encrypted   = false
+  storage_encrypted = true
   tags                = { environment = "prod" }
 }
 
