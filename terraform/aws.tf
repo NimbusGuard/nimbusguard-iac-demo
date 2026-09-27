@@ -7,6 +7,7 @@
 #  The control ID each resource trips is noted in its comment.
 #
 #  A few hardened resources at the bottom show the PASS side.
+#  Just adding a new line to trigger the scan 
 # =============================================================================
 
 # ── NG-AWS-S3-001 — bucket open to the public (Block Public Access disabled) ──
