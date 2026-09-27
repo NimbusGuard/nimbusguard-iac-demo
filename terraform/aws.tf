@@ -159,7 +159,7 @@ resource "aws_instance" "app" {
 
   metadata_options {
     http_endpoint = "enabled"
-    http_tokens   = "optional"
+    http_tokens = "required"
   }
 
   tags = { environment = "prod" }
