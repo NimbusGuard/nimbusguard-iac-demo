@@ -7,6 +7,7 @@
 #  The control ID each resource trips is noted in its comment.
 #
 #  A few hardened resources at the bottom show the PASS side.
+#  Just adding a new line to trigger the scan 
 # =============================================================================
 
 # ── NG-AWS-S3-001 — bucket open to the public (Block Public Access disabled) ──
@@ -48,14 +49,14 @@ resource "aws_db_instance" "orders" {
   instance_class      = "db.t3.medium"
   allocated_storage   = 50
   publicly_accessible = true
-  storage_encrypted   = false
+  storage_encrypted = true
   tags                = { environment = "prod" }
 }
 
 # ── NG-AWS-KMS-001 — customer key without automatic rotation ─────────────────
 resource "aws_kms_key" "app_data" {
   description         = "application data key"
-  enable_key_rotation = false
+  enable_key_rotation = true
   tags                = { environment = "prod" }
 }
 
@@ -71,7 +72,7 @@ resource "aws_cloudtrail" "org_trail" {
 resource "aws_ebs_volume" "app_data" {
   availability_zone = "us-east-1a"
   size              = 100
-  encrypted         = false
+  encrypted = true
   tags              = { environment = "prod" }
 }
 
@@ -130,6 +131,9 @@ resource "aws_efs_file_system" "shared" {
 
 # ── NG-AWS-DYNAMODB — no point-in-time recovery, no deletion protection ──────
 resource "aws_dynamodb_table" "sessions" {
+  point_in_time_recovery {
+    enabled = true
+  }
   name         = "sessions"
   hash_key     = "id"
   billing_mode = "PAY_PER_REQUEST"
