@@ -22,6 +22,6 @@ resource "aws_db_instance" "analytics" {
   instance_class      = "db.t3.large"
   allocated_storage   = 100
   publicly_accessible = true
-  storage_encrypted   = false
+  storage_encrypted = true
   tags                = { environment = "prod" }
 }
