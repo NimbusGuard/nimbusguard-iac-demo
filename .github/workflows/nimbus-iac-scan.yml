@@ -21,8 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Pinned to a full SHA, not @main (F-CICD-01). This repo is the public
+      # example customers copy, so the floating ref here taught the pattern we
+      # are trying to stop: an Action running in your pipeline, with your
+      # secrets, at whatever state someone else's default branch is in.
       - name: NimbusGuard IaC Scan
-        uses: NimbusGuard/nimbus-iac-scanner@main
+        uses: NimbusGuard/nimbus-iac-scanner@1743e30f03204e9d380a92a07e99fb835bcc4632
         with:
           api-url: ${{ secrets.NIMBUS_API_URL }}
           api-key: ${{ secrets.NIMBUS_API_KEY }}
